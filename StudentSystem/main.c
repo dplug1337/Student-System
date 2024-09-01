@@ -72,7 +72,7 @@ int CountStudentsInFile(const char* filename)
     return students;
 }
 
-*Student filteredStudents(*Student students, int* studentCount, const char* speciality, char gender, int birthYear, int* filderedCount )
+*Student filterStudents(*Student students, int* studentCount, const char* speciality, char gender, int birthYear, int* filderedCount )
 {
     Student* filteredStudents = (Student*)malloc(studentCount*sizeof(Student));
     if (!filteredStudents)
@@ -97,6 +97,66 @@ int CountStudentsInFile(const char* filename)
 
     return filteredStudents;
 
+}
+
+void saveStudentsToBinary(Student* students, int count, int course, char initial) {
+    FILE* file = fopen("students_info.bin", "wb");
+    if (!file) {
+        printf("Error in opening the binary file.\n");
+        return;
+    }
+
+    // Reviewing and saving the students matched the criteria.
+    for (int i = 0; i < count; i++) {
+        if (students[i].course == course && students[i].name[0] == initial) {
+            fwrite(&students[i], sizeof(Student), 1, file);
+        }
+    }
+
+    fclose(file);
+}
+
+Student* addStudent(Student* students, int* count) {
+    // Increasing the size of the array
+    Student* newStudents = (Student*)realloc(students, (*count + 1) * sizeof(Student));
+    if (!newStudents) {
+        printf("Error increasing the array.\n");
+        return NULL;
+    }
+
+    // Input data for the new student
+    printf("Type data for the new student:\n");
+    printf("Name: ");
+    scanf(" %[^\n]", newStudents[*count].name);
+    printf("Faculty number: ");
+    scanf("%d", &newStudents[*count].facultyNumber);
+    printf("Specialty: ");
+    scanf(" %[^\n]", newStudents[*count].specialty);
+    printf("Birthday (DD.MM.YYYY): ");
+    scanf(" %[^\n]", newStudents[*count].birthDate);
+    printf("Course: ");
+    scanf("%d", &newStudents[*count].course);
+    printf("Gender(M/F): ");
+    scanf(" %c", &newStudents[*count].gender);
+    printf("Grade: ");
+    scanf("%f", &newStudents[*count].grade);
+
+    // Saving the data to text file.
+    FILE* file = fopen("students.txt", "a");
+    if (!file) {
+        printf("Error in opening the file for save.\n");
+        return students;  // We move back to the old array if we can't save
+    }
+
+    fprintf(file, "%s;%d;%s;%s;%d;%c;%.2f\n",
+            newStudents[*count].name, newStudents[*count].facultyNumber,
+            newStudents[*count].specialty, newStudents[*count].birthDate,
+            newStudents[*count].course, newStudents[*count].gender,
+            newStudents[*count].grade);
+    fclose(file);
+
+    (*count)++;
+    return newStudents;
 }
 
 int main()
